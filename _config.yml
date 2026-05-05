@@ -1,0 +1,5 @@
+title: dot-council
+description: Automated pixel-art content publishing tool — legal documentation
+theme: jekyll-theme-minimal
+markdown: kramdown
+permalink: pretty
