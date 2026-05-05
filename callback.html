@@ -1,0 +1,111 @@
+---
+layout: default
+title: TikTok OAuth Callback
+permalink: /callback/
+---
+
+<style>
+  .callback-box {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+  .callback-box.success { border-color: #2ea44f; background: #f0fff4; }
+  .callback-box.error { border-color: #cb2431; background: #fff5f5; }
+  .callback-code {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    word-break: break-all;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    user-select: all;
+  }
+  .copy-btn {
+    padding: 0.5rem 1rem;
+    background: #2ea44f;
+    color: #fff;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  .copy-btn:hover { background: #2c974b; }
+  .copy-btn.copied { background: #6e7681; }
+</style>
+
+<h1>TikTok OAuth Callback</h1>
+
+<div id="callback-output">
+  <p>Processing the OAuth response...</p>
+</div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code');
+  var state = params.get('state');
+  var scopes = params.get('scopes');
+  var error = params.get('error') || params.get('error_description');
+  var output = document.getElementById('callback-output');
+
+  if (error) {
+    output.innerHTML =
+      '<div class="callback-box error">' +
+      '<h2>OAuth Error</h2>' +
+      '<p><strong>Error:</strong> ' + escapeHtml(error) + '</p>' +
+      '<p>Please retry the OAuth flow from the CLI.</p>' +
+      '</div>';
+    return;
+  }
+
+  if (!code) {
+    output.innerHTML =
+      '<div class="callback-box">' +
+      '<h2>No code present</h2>' +
+      '<p>This page expects to be reached via the TikTok OAuth redirect with a <code>code</code> query parameter.</p>' +
+      '<p>If you are seeing this directly, the OAuth flow has not completed correctly.</p>' +
+      '</div>';
+    return;
+  }
+
+  output.innerHTML =
+    '<div class="callback-box success">' +
+    '<h2>Authorization successful</h2>' +
+    '<p>Copy the values below and paste them into the local CLI to complete the OAuth handshake.</p>' +
+    '<p><strong>Authorization code:</strong></p>' +
+    '<code class="callback-code" id="code-value">' + escapeHtml(code) + '</code>' +
+    '<button class="copy-btn" id="copy-code">Copy code</button>' +
+    (state ? '<p style="margin-top:1.5rem;"><strong>State:</strong></p><code class="callback-code">' + escapeHtml(state) + '</code>' : '') +
+    (scopes ? '<p style="margin-top:1.5rem;"><strong>Scopes:</strong></p><code class="callback-code">' + escapeHtml(scopes) + '</code>' : '') +
+    '<p style="margin-top:1.5rem; font-size:0.85rem; color:#6e7681;">This code is valid for a short time. Exchange it for tokens promptly.</p>' +
+    '</div>';
+
+  document.getElementById('copy-code').addEventListener('click', function () {
+    navigator.clipboard.writeText(code).then(function () {
+      var btn = document.getElementById('copy-code');
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(function () {
+        btn.textContent = 'Copy code';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+})();
+</script>
